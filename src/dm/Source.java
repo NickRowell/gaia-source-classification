@@ -378,4 +378,19 @@ public class Source implements Serializable {
          return true;
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    public String toString() {
+    	
+    	StringBuilder str = new StringBuilder();
+    	str.append(flux + "\t");
+    	str.append(peakFlux + "\t");
+    	str.append(fluxRatio + "\t");
+    	str.append(eigs[0] + "\t" + eigs[1] + "\t");
+    	str.append(orientation + "\t");
+    	str.append(type);
+    	return str.toString();
+    }
+    
 }
