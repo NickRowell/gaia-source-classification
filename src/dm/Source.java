@@ -1,6 +1,7 @@
 package dm;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -424,6 +425,29 @@ public class Source implements Serializable {
     	str.append(orientation + "\t");
     	str.append(type);
     	return str.toString();
+    }
+    
+    /**
+     * Encodes this {@link Source} as an array of bytes suitable for writing to
+     * a binary file.
+     * @return
+     * 	An array of bytes suitable for writing to a binary file.
+     */
+    public byte[] toByteArray() {
+    	
+    	// Create a ByteBuffer of the right capacity
+    	ByteBuffer b = ByteBuffer.allocate(57);
+    	
+    	// TODO: add other fields as necessary
+    	b.putDouble(flux);                  // 8 bytes
+    	b.putDouble(peakFlux);              // 8 bytes
+    	b.putDouble(eigs[0]);               // 8 bytes
+    	b.putDouble(eigs[1]);               // 8 bytes
+    	b.putDouble(orientation);           // 8 bytes
+    	b.put((byte)type.ordinal());        // 1 byte
+    	b.putDouble(obmtRev);			    // 8 bytes
+    	
+    	return b.array();
     }
     
 }
