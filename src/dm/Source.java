@@ -441,6 +441,7 @@ public class Source implements Serializable {
     	// TODO: add other fields as necessary
     	b.putDouble(flux);                  // 8 bytes
     	b.putDouble(peakFlux);              // 8 bytes
+    	b.putDouble(fluxRatio);             // 8 bytes
     	b.putDouble(eigs[0]);               // 8 bytes
     	b.putDouble(eigs[1]);               // 8 bytes
     	b.putDouble(orientation);           // 8 bytes
