@@ -47,10 +47,13 @@ public class Window implements Serializable {
 	public final long transitId;
 	
 	/**
-	 * Observation time for this window
-	 * TODO: decide on the units for this
+	 * Observation time for this window [rev]. This is the onboard mission time (OBMT) measured in
+	 * revolutions (of the satellite) since some relatively arbitrary zeropoint. For converting this
+	 * to a meaningful time in e.g. UTC the following zeropoint offset can be used:
+	 * 
+	 * OBMT 3500.0 [rev] = 2016-03-21T20:13:20.716226974 [UTC]
 	 */
-	public final double obsTime;
+	public final double obmtRev;
 
 	/**
 	 * Window size (number of samples) in the AL direction
@@ -96,8 +99,8 @@ public class Window implements Serializable {
 	 * 	The CCD gate used by this observation (0->12)
 	 * @param transitId
 	 * 	The transit ID for this observation
-	 * @param obsTime
-	 * 	Observation time for this window
+	 * @param obmtRev
+	 * 	The onboard mission time of observation for this window, in revolutions [revs]
 	 * @param alSamples
 	 * 	Window size (number of samples) in the AL direction
 	 * @param acSamples
@@ -111,7 +114,7 @@ public class Window implements Serializable {
 	 * @param samples
 	 * 	The raw samples for this window [e/pixel]
 	 */
-	public Window(byte fov, byte row, byte strip, short acWinCoord, byte gateNum, long transitId, double obsTime,
+	public Window(byte fov, byte row, byte strip, short acWinCoord, byte gateNum, long transitId, double obmtRev,
 			int alSamples, int acSamples, int alSampleSize, int acSampleSize, double intTime, float[] samples) {
 		this.fov = fov;
 		this.row = row;
@@ -119,7 +122,7 @@ public class Window implements Serializable {
 		this.acWinCoord = acWinCoord;
 		this.gate = gateNum;
 		this.transitId = transitId;
-		this.obsTime = obsTime;
+		this.obmtRev = obmtRev;
 		this.alSamples = alSamples;
 		this.acSamples = acSamples;
 		this.alSampleSize = alSampleSize;

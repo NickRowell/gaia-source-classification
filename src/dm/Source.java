@@ -97,6 +97,15 @@ public class Source implements Serializable {
     private Type type;
 
     /**
+	 * Observation time for this source [rev]. This is the onboard mission time (OBMT) measured in
+	 * revolutions (of the satellite) since some relatively arbitrary zeropoint. For converting this
+	 * to a meaningful time in e.g. UTC the following zeropoint offset can be used:
+	 * 
+	 * OBMT 3500.0 [rev] = 2016-03-21T20:13:20.716226974 [UTC]
+	 */
+	private double obmtRev;
+    
+    /**
      * The total integrated (background-subtracted) samples [e-]
      */
     private double flux;
@@ -226,6 +235,30 @@ public class Source implements Serializable {
         this.flux = flux;
     }
 
+    /**
+     * Get the observation time for this source [rev]. This is the onboard mission time (OBMT) measured in
+	 * revolutions (of the satellite) since some relatively arbitrary zeropoint. For converting this
+	 * to a meaningful time in e.g. UTC the following zeropoint offset can be used:
+	 * 
+	 * OBMT 3500.0 [rev] = 2016-03-21T20:13:20.716226974 [UTC]
+	 * 
+	 * @return
+	 * 	The observation time for this source [rev].
+     */
+    public double getObmtRev() {
+        return obmtRev;
+    }
+
+    /**
+     * Set the observation time for this source [rev].
+     * 
+     * @param obmtRev
+	 * 	The observation time for this source [rev].
+     */
+    public void setObmtRev(double obmtRev) {
+        this.obmtRev = obmtRev;
+    }
+    
     /**
      * Get the peak (background-subtracted) sample [e-].
      *

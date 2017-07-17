@@ -41,7 +41,7 @@ public class SourceDetectorWatershedSegmentation extends SourceDetector {
      * based on the watershed segmentation algorithm.
      */
     @Override
-    public List<Source> getSources(float[] samples, int alLength, int acLength, int alPixPerSample,
+    protected List<Source> getSources(float[] samples, int alLength, int acLength, int alPixPerSample,
             int acPixPerSample, double[] bkg) {
 
         // Get (unclassified) sources

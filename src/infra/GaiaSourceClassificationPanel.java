@@ -420,7 +420,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
  	    gateLabel.setText(String.format("%s",GaiaUtil.gateNames[currentWindow.gate]));
  	    acPosLabel.setText(String.format("%d", currentWindow.acWinCoord));
  	    intTimeLabel.setText(String.format("%f",currentWindow.intTime));
- 	    obsTimeLabel.setText(String.format("%f",currentWindow.obsTime));
+ 	    obsTimeLabel.setText(String.format("%f",currentWindow.obmtRev));
  	    locBkgLabel.setText(String.format("%.5f +/- %.5f", bkgAndError[0], bkgAndError[1]));
  		
 		// Update source panel

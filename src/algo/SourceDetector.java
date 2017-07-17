@@ -53,7 +53,7 @@ public abstract class SourceDetector {
      *            Background level and error (STD)
      * @return List containing the (classified) Sources detected in the window
      */
-    public abstract List<Source> getSources(float[] samples, int alLength, int acLength, int alPixPerSample,
+    protected abstract List<Source> getSources(float[] samples, int alLength, int acLength, int alPixPerSample,
             int acPixPerSample, double[] bkg);
 
     /**
@@ -84,6 +84,14 @@ public abstract class SourceDetector {
     	int acPixPerSample = window.acSampleSize;
     	
         final double[] bkgAndError = LocalBkgUtils.estimateBackgroundAndError(samples);
-        return getSources(samples, alLength, acLength, alPixPerSample, acPixPerSample, bkgAndError);
+        
+        List<Source> sources = getSources(samples, alLength, acLength, alPixPerSample, acPixPerSample, bkgAndError);
+        
+        // Copy the observation time for each Source from the Window
+        for(Source source : sources) {
+        	source.setObmtRev(window.obmtRev);
+        }
+        
+        return sources;
     }
 }
