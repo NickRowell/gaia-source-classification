@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -93,4 +95,32 @@ public class FileUtil {
 		
 		return output;
 	}
+	
+	/**
+	 * List files in a given directory recursively.
+	 * 
+	 * @param parent
+	 * 	The top level directory
+	 * @param filter
+	 * 	The {@link FileFilter} to apply to the returned file list
+	 * @return
+	 * 	A List of the all the files below the parent directory path that satisfy the file filter
+	 */
+	public static List<File> listFilesRecursive(File parent, FileFilter filter) {
+		
+		List<File> files = new LinkedList<>();
+		
+		for(File file : parent.listFiles()) {
+			// If this is a regular file then conditionally add it to the output list
+			if(file.isFile() && filter.accept(file)) {
+				files.add(file);
+			}
+			// If this is a subdirectory then recursively search it
+			if(file.isDirectory()) {
+				files.addAll(listFilesRecursive(file, filter));
+			}
+		}
+		return files;
+	}
+	
 }
