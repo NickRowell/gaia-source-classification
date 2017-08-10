@@ -44,6 +44,14 @@ public class Source implements Serializable {
          */
         SPIKE_DIAGONAL("A diffraction spike in a diagonal direction"),
         /**
+         * A hot column.
+         */
+        HOT_COLUMN("A hot pixel column"),
+        /**
+         * A gate release.
+         */
+        GATE_RELEASE("A CCD gate release"),
+        /**
          * Source that could not be classified as a known type.
          */
         UNKNOWN("An unknown source type");

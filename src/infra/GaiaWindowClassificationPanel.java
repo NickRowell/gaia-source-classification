@@ -3,21 +3,24 @@ package infra;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -32,19 +35,18 @@ import algo.SourceDetector;
 import dm.Source;
 import dm.Source.Type;
 import dm.Window;
-import exec.GaiaSourceClassificationApplication.Mode;
 import util.FileUtil;
 import util.GaiaUtil;
 import util.GuiUtil;
 import util.LocalBkgUtils;
 
 /**
- * This class provides the main GUI for the {@link exec.GaiaSourceClassificationApplication}.
+ * This class provides the main GUI for the {@link exec.GaiaWindowClassificationApplication}.
  * 
  * @author nrowell
  * @version $Id$
  */
-public class GaiaSourceClassificationPanel extends JPanel {
+public class GaiaWindowClassificationPanel extends JPanel {
 	
 	/**
 	 * The serial version UID
@@ -54,7 +56,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 	/**
      * Logger
      */
-    protected static Logger logger = Logger.getLogger(GaiaSourceClassificationPanel.class.getCanonicalName());
+    protected static Logger logger = Logger.getLogger(GaiaWindowClassificationPanel.class.getCanonicalName());
     
     /**
      * The JPanel showing the samples and source classification for the current window.
@@ -119,19 +121,25 @@ public class GaiaSourceClassificationPanel extends JPanel {
 //	SourceClassifier sourceClassifier = new SourceClassifierNN();
 	
 	/**
-	 * The current source classification mode (MANUAL/AUTOMATIC)
+	 * The {@link List} of all manually classified {@link Window}s.
 	 */
-	Mode mode;
+	List<Window> classifiedWindows;
 	
 	/**
-	 * The {@link List} of manually classified {@link Source}s.
+	 * The {@link TrainingSetWindowPanel} used to manipulate the training set.
 	 */
-	List<Source> classifiedSources;
+	TrainingSetWindowPanel trainingSetPanel;
 	
 	/**
-	 * The {@link TrainingSetSourcePanel} used to manipulate the training set.
+	 * Maps the number of sources fo each {@link Type} in the current {@link Window}. Use a one-element int array
+	 * to store the number of sources.
 	 */
-	TrainingSetSourcePanel trainingSetPanel;
+	Map<Type, int[]> sourceCountsMap = new HashMap<>();
+	
+	/**
+	 * Maps the source {@link Type} to the {@link JLabel} displaying the number counts.
+	 */
+	Map<Type, JLabel> sourceCountsStrings = new HashMap<>();
 	
 	/**
 	 * The directory in which to store output files.
@@ -152,15 +160,13 @@ public class GaiaSourceClassificationPanel extends JPanel {
     JLabel locBkgLabel = new JLabel("-");
     
     /**
-     * Constructor for the {@link GaiaSourceClassificationPanel}.
-     * @param mode
-     * 	The {@link Mode} to operate in (MANUAL/AUTOMATIC)
+     * Constructor for the {@link GaiaWindowClassificationPanel}.
      * @param outputDir
      * 	The {@link File} specifying the directory to save outputs.
      */
-	public GaiaSourceClassificationPanel(Mode mode, File outputDir) {
+	public GaiaWindowClassificationPanel(File outputDir) {
 		
-		this.mode = mode;
+		this.outputDir = outputDir;
 		
         // JButtons to control iteration through AstroObservations
 		JButton prevFileButton = new JButton("<< Previous file");
@@ -173,18 +179,15 @@ public class GaiaSourceClassificationPanel extends JPanel {
  		JButton nextSpikeButton = new JButton("Next diffraction spike >>");
  		JButton nextUnknownButton = new JButton("Next unknown type >>");
 
- 		// Mode-dependent settings
-		if(mode==Mode.MANUAL) {
-			this.outputDir = outputDir;
-			classifiedSources = new LinkedList<>();
-			trainingSetPanel = new TrainingSetSourcePanel(classifiedSources, outputDir);
-			JFrame trainingSetFrame = new JFrame("Training Set Contents");
-			trainingSetFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			trainingSetFrame.add(trainingSetPanel);
-			trainingSetFrame.pack();
-			trainingSetFrame.setLocationRelativeTo(null);
-			trainingSetFrame.setVisible(true);
-		}
+		
+		classifiedWindows = new LinkedList<>();
+		trainingSetPanel = new TrainingSetWindowPanel(classifiedWindows, outputDir);
+		JFrame trainingSetFrame = new JFrame("Training Set Contents");
+		trainingSetFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		trainingSetFrame.add(trainingSetPanel);
+		trainingSetFrame.pack();
+		trainingSetFrame.setLocationRelativeTo(null);
+		trainingSetFrame.setVisible(true);
 		
  		samplePanel = new JPanel();
  		samplePanel.setBorder(BorderFactory.createTitledBorder("File X/TOTAL; Window X/TOTAL; "
@@ -229,7 +232,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Window files!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Window files!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 		
@@ -240,7 +243,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Window files!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Window files!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 
@@ -251,7 +254,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 		
@@ -262,7 +265,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 		
@@ -273,7 +276,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 		
@@ -284,7 +287,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 					updateGui();
 				}
 				else {
-					JOptionPane.showMessageDialog(GaiaSourceClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(GaiaWindowClassificationPanel.this, "No more Windows in this File!", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}});
 		
@@ -313,17 +316,97 @@ public class GaiaSourceClassificationPanel extends JPanel {
 				}
 			}});
  		
- 		
- 		
  		// Panel displaying colour scheme for different source classifications
- 		JPanel classPanel = new JPanel(new GridLayout(Type.values().length, 2));
+ 		JPanel classPanel = new JPanel(new GridBagLayout());
  		classPanel.setBorder(BorderFactory.createTitledBorder("Source classifications"));
+ 		
+ 		GridBagConstraints c = new GridBagConstraints();
+        c.ipadx = 5;
+        c.ipady = 0;
+        c.gridheight = 1;
+        c.gridwidth = 1;
+	    c.fill = GridBagConstraints.BOTH;
+ 		c.gridy = 0;
+ 		
  		for(Type type : Type.values()) {
+ 			
  			JLabel label = new JLabel(type.toString());
  			label.setForeground(GuiUtil.getColor(type));
- 			classPanel.add(label);
- 			classPanel.add(new JLabel(type.getDescription()));
+
+ 			sourceCountsStrings.put(type, new JLabel(String.format("%4d", 0)));
+ 			sourceCountsMap.put(type, new int[1]);
+ 			
+ 			JButton add = new JButton("+");
+ 			JButton sub = new JButton("-");
+ 			
+ 			add.addActionListener(new ActionListener(){
+ 				@Override
+ 				public void actionPerformed(ActionEvent e) {
+ 					// Add one to the source type
+ 					int newCount = ++sourceCountsMap.get(type)[0];
+ 					sourceCountsStrings.get(type).setText(String.format("%4d", newCount));
+ 				}});
+ 			
+ 			sub.addActionListener(new ActionListener(){
+ 				@Override
+ 				public void actionPerformed(ActionEvent e) {
+ 					// Add one to the source type
+ 					int oldCount = sourceCountsMap.get(type)[0];
+ 					if(oldCount > 0) {
+	 					int newCount = --sourceCountsMap.get(type)[0];
+	 					sourceCountsStrings.get(type).setText(String.format("%4d", newCount));
+ 					}
+ 				}});
+ 			
+ 	        c.gridx = 0;
+ 			classPanel.add(label, c);
+ 			c.gridx = 1;
+ 			classPanel.add(new JLabel(type.getDescription()), c);
+ 			c.gridx = 2;
+ 			classPanel.add(sourceCountsStrings.get(type), c);
+ 			c.gridx = 3;
+ 			classPanel.add(add, c);
+ 			c.gridx = 4;
+ 			classPanel.add(sub, c);
+ 			c.gridy++;
  		}
+ 		
+ 		
+        // Add button to add Window to the training set
+        final JButton addToTrainingSetButton = new JButton("Add to training set");
+        ActionListener bl = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) 
+            {
+            	if(currentWindow == null) {
+            		return;
+            	}
+            	
+            	// First check if we haven't already got this window in the list
+            	if(classifiedWindows.contains(currentWindow)) {
+            		JOptionPane.showMessageDialog(null, "Training set already contains this Window!",
+            				"Training set conflict", JOptionPane.WARNING_MESSAGE);
+            	}
+            	else {
+            		// Write all the Sources to the Window before saving to the list
+            		for(Type type : sourceCountsMap.keySet()) {
+            			for(int i=0; i<sourceCountsMap.get(type)[0]; i++) {
+            				Source source = new Source();
+            				source.setType(type);
+            				currentWindow.sources.add(source);
+            			}
+            		}
+            		
+            		classifiedWindows.add(currentWindow);
+            		trainingSetPanel.update();
+            	}
+            }
+        };
+        addToTrainingSetButton.addActionListener(bl);
+ 		
+        c.gridx = 0;
+        c.gridwidth = 5;
+        classPanel.add(addToTrainingSetButton, c);
  		
  		JPanel buttonPanel = new JPanel(new GridLayout(5,2));
  		buttonPanel.add(prevFileButton);
@@ -347,6 +430,28 @@ public class GaiaSourceClassificationPanel extends JPanel {
 		setLayout(new FlowLayout());
 		add(samplePanel);
  		add(infoAndButtonPanel);
+	}
+	
+	/**
+	 * Resets the counters for the number of each {@link Source} {@link Type}s in the currently
+	 * displayed {@link Window}.
+	 */
+	public void resetSourceCounts() {
+		// Reset counters to zero
+		for(int[] counter : sourceCountsMap.values()) {
+			counter[0] = 0;
+		}
+		
+		// Update counts
+		if(currentWindow!=null) {
+			for(Source source : currentWindow.sources) {
+				sourceCountsMap.get(source.getType())[0]++;
+			}
+		}
+		// Update text fields
+		for(Type type : Type.values()) {
+			sourceCountsStrings.get(type).setText(String.format("%4d", sourceCountsMap.get(type)[0]));
+		}
 	}
 
 	/**
@@ -390,6 +495,8 @@ public class GaiaSourceClassificationPanel extends JPanel {
 	 * Process the current AstroObservation/strip and plot the results in the GUI.
 	 */
 	private void updateGui() {
+		
+		resetSourceCounts();
 		
 		if(currentWindow==null) {
 			// No currentWindow (likely we loaded a file that didn't contain any)
@@ -459,53 +566,7 @@ public class GaiaSourceClassificationPanel extends JPanel {
 		
 		sourceData.add(new JLabel("Source classification:"));
 		
-		if(mode==Mode.AUTOMATIC) {
-			sourceData.add(new JLabel(source!=null ? source.getType().toString() : "---"));
-		}
-		else if(mode==Mode.MANUAL) {
-			// Add drop-down combo box
-			final JComboBox<Type> typeComboBox = new JComboBox<Type>(Type.values());
-	        typeComboBox.setSelectedItem(source!=null ? source.getType() : Type.UNKNOWN);
-	        ActionListener al = new ActionListener() {
-	            @Override
-	            public void actionPerformed(ActionEvent evt) 
-	            {
-	            	// Get the Type that the user selected and set the Source field
-	            	source.setType((Type)typeComboBox.getSelectedItem());
-	            }
-	        };
-	        typeComboBox.addActionListener(al);
-	        
-	        // Add button to add Source to the training set
-	        final JButton addToTrainingSetButton = new JButton("Add to set");
-	        ActionListener bl = new ActionListener() {
-	            @Override
-	            public void actionPerformed(ActionEvent evt) 
-	            {
-	            	// First check if we haven't already got this source in the list
-	            	if(classifiedSources.contains(source)) {
-	            		JOptionPane.showMessageDialog(null, "Training set already contains this Source!",
-	            				"Training set conflict", JOptionPane.WARNING_MESSAGE);
-	            	}
-	            	else {
-	            		classifiedSources.add(source);
-	            		trainingSetPanel.update();
-	            	}
-	            }
-	        };
-	        addToTrainingSetButton.addActionListener(bl);
-	        
-	        if(source==null) {
-	        	typeComboBox.setEnabled(false);
-	        	addToTrainingSetButton.setEnabled(false);
-	        }
-	        
-	        JPanel subPanel = new JPanel(new GridLayout(1,2));
-	        subPanel.add(typeComboBox);
-	        subPanel.add(addToTrainingSetButton);
-	        
-	        sourceData.add(subPanel);
-		}
+		sourceData.add(new JLabel(source!=null ? source.getType().toString() : "---"));
 		
 		sourceData.add(new JLabel("Integrated samples:"));
 		sourceData.add(new JLabel(source!=null ? Double.toString(source.getFlux()) : "---"));

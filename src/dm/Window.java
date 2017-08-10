@@ -1,6 +1,13 @@
 package dm;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import dm.Source.Type;
 
 /**
  * Class represents a single 2D window measured by Gaia. It encapsulates all the fields required by the
@@ -86,6 +93,11 @@ public class Window implements Serializable {
 	public final float[] samples;
 	
 	/**
+	 * List containing any {@link Source}s detected in the {@link Window}.
+	 */
+	public final List<Source> sources;
+	
+	/**
 	 * Main constructor for the {@link Window}.
 	 * @param fov
 	 * 	The field-of-view number (0 or 1)
@@ -129,6 +141,45 @@ public class Window implements Serializable {
 		this.acSampleSize = acSampleSize;
 		this.intTime = intTime;
 		this.samples = samples;
+		this.sources = new LinkedList<>();
 	}
-	
+
+    /**
+     * Encodes this {@link Window} as an array of bytes suitable for writing to
+     * a binary file.
+     * @return
+     * 	An array of bytes suitable for writing to a binary file.
+     */
+    public byte[] toByteArray() {
+    	
+    	// Create a ByteBuffer of the right capacity.
+    	// 18*12 samples of 4 bytes each
+    	// Number of each type of source; 8 types of one byte each
+    	// OBMT of 8 bytes
+    	ByteBuffer b = ByteBuffer.allocate(18*12*4 + Type.values().length + 8);
+    	
+    	// Count the numbers of each {@link Source} type
+    	Map<Type, byte[]> sourceCounts = new EnumMap<>(Type.class);
+    	for(Type type : Type.values()) {
+    		sourceCounts.put(type, new byte[1]);
+    	}
+    	for(Source source : sources) {
+    		sourceCounts.get(source.getType())[0]++;
+    	}
+    	
+    	// Write the 216 samples; 4 bytes each
+    	for(float sample : samples) {
+    		b.putFloat(sample);
+    	}
+    	// Write the number of each type of {@link Source}; 1 byte each
+    	for(Source source : sources) {
+    		b.put(sourceCounts.get(source.getType())[0]);
+    	}
+    	// Write the OBMT; 8 bytes
+    	b.putDouble(obmtRev);
+    	
+    	// TODO: add other fields as necessary
+    	
+    	return b.array();
+    }
 }

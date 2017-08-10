@@ -22,29 +22,21 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 
-import infra.GaiaSourceClassificationPanel;
+import infra.GaiaWindowClassificationPanel;
 import util.GuiUtil;
 
 /**
- * The main entry point for the Gaia source detection & classification application.
- *
+ * The main entry point for the Gaia window classification application.
+ * 
  * @author nrowell
  * @version $Id$
  */
-public class GaiaSourceClassificationApplication extends JFrame {
+public class GaiaWindowClassificationApplication extends JFrame {
 	
     /**
 	 * The serial version UID.
 	 */
 	private static final long serialVersionUID = 3817647241577480212L;
-
-    /**
-     * Enumerated type to represent the two classification modes that the application can operate in:
-     * 
-     * MANUAL    -> source classifications are provided manually; all classified sources are saved to file as a training set.
-     * AUTOMATIC -> source classifications are performed using a trained classifier; no output is saved to file.
-     */
-    public static enum Mode {MANUAL, AUTOMATIC}
     
 	/**
      * Stores the path to the directory from which the last outputs were loaded.
@@ -54,27 +46,15 @@ public class GaiaSourceClassificationApplication extends JFrame {
 	/**
 	 * Main constructor.
 	 */
-	public GaiaSourceClassificationApplication() {
+	public GaiaWindowClassificationApplication() {
 		
-		// Ask the user in what mode to run
-		Mode mode = GuiUtil.promptForSourceClassificationMode();
+		setTitle("Gaia Window Classification Application");
 		
-		if(mode==Mode.MANUAL) {
-			setTitle("Gaia Source Classification Application: manual classification mode");
-		}
-		else if(mode==Mode.AUTOMATIC) {
-			setTitle("Gaia Source Classification Application: automatic classification mode");
-		}
+		// Prompt user for the output directory to store training set
+		File output =  GuiUtil.promptForOutputDirectory();
 		
-		// If we're in MANUAL mode then prompt the user to specify the output directory for
-		// manually classified {@link Source}s.
-		File output = null;
-		if(mode==Mode.MANUAL) {
-			output = GuiUtil.promptForOutputDirectory();
-		}
-		
-		// Create a SourceDetectionClassificationTraining to display
-		final GaiaSourceClassificationPanel app = new GaiaSourceClassificationPanel(mode, output);
+		// Create the GUI
+		final GaiaWindowClassificationPanel app = new GaiaWindowClassificationPanel(output);
 		
 		final JMenuBar menuBar = new JMenuBar();
         final JMenu fileMenu = new JMenu("File");
@@ -163,7 +143,7 @@ public class GaiaSourceClassificationApplication extends JFrame {
 			    	}
 				});
 				
-				int userSelection = chooser.showSaveDialog(GaiaSourceClassificationApplication.this);
+				int userSelection = chooser.showSaveDialog(GaiaWindowClassificationApplication.this);
 				 
 				if (userSelection == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();
@@ -180,7 +160,7 @@ public class GaiaSourceClassificationApplication extends JFrame {
 					try {
 						ImageIO.write(im, "PNG", file);
 					} catch (IOException e1) {
-						JOptionPane.showMessageDialog(GaiaSourceClassificationApplication.this, 
+						JOptionPane.showMessageDialog(GaiaWindowClassificationApplication.this, 
 								"Error saving to file "+file.getAbsolutePath()+"!",
 								"Error", JOptionPane.ERROR_MESSAGE);
 					}
@@ -207,7 +187,7 @@ public class GaiaSourceClassificationApplication extends JFrame {
 		SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-            	new GaiaSourceClassificationApplication();
+            	new GaiaWindowClassificationApplication();
             }
         });
 	}	

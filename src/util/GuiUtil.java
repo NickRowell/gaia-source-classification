@@ -43,7 +43,7 @@ public class GuiUtil {
 	 * @return
 	 * 	The {@link Mode} specifying the source classification mode.
 	 */
-	public static Mode promptForClassificationMode() {
+	public static Mode promptForSourceClassificationMode() {
 		
 		Object[] options = {"Manual", "Automatic"};
 		int n = JOptionPane.showOptionDialog(null,
@@ -69,7 +69,7 @@ public class GuiUtil {
 		// NOTE: we shouldn't ever reach this code
 		throw new IllegalStateException("Reached supposedly unreachable code. Hmm.");
 	}
-	
+
 	/**
 	 * Prompts the user to select a directory.
 	 * @return
@@ -133,12 +133,16 @@ public class GuiUtil {
 	 */
 	public static Color getColor(Type type) {
 		switch(type) {
-			case STELLAR: return new Color(55,126,184);
-			case COSMIC: return new Color(77,175,74);
-			case SPIKE_AL:return new Color(152,78,163);
-			case SPIKE_AC:return new Color(255,127,0);
-			case SPIKE_DIAGONAL: return new Color(166,86,40);
+			case STELLAR: return new Color(228,26,28);
+			case COSMIC: return new Color(55,126,184);
+			case SPIKE_AL:return new Color(77,175,74);
+			case SPIKE_AC:return new Color(152,78,163);
+			case SPIKE_DIAGONAL: return new Color(255,127,0);
+			case HOT_COLUMN: return new Color(255,255,51);
+			case GATE_RELEASE: return new Color(166,86,40);
 			case UNKNOWN: return new Color(247,129,191);
+		default:
+			break;
 		}
 		return new Color(0,0,0);
 	}

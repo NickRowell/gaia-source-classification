@@ -11,8 +11,8 @@ import dm.Source.Type;
 import util.FileUtil;
 
 /**
- * This is a simple demonstration of loading a bunch of {@link Source}s from a particular directory
- * and processing them.
+ * This class provides a short application for converting a set of {@link Source}s from a
+ * serialized Java file to a text file for use with other non-Java applications.
  */
 public class WriteSourcesToTextFile {
 	

@@ -15,28 +15,29 @@ import javax.swing.JPanel;
 
 import dm.Source;
 import dm.Source.Type;
+import dm.Window;
 import util.FileUtil;
 import util.GuiUtil;
 
 /**
  * This class provides a GUI component that visualises the current contents of the training set and
- * provides operations on it.
+ * provides operations on it. This is for use in building a training set of {@link Window}s.
  *
  *
  * @author nrowell
  * @version $Id$
  */
-public class TrainingSetPanel extends JPanel {
+public class TrainingSetWindowPanel extends JPanel {
 
 	/**
 	 * The serial version UID.
 	 */
 	private static final long serialVersionUID = 5222034304940297116L;
-	
+
 	/**
-	 * The {@link List} of manually classified {@link Source}s.
+	 * The {@link List} of manually classified {@link Window}s.
 	 */
-	List<Source> classifiedSources;
+	List<Window> classifiedWindows;
 	
 	/**
 	 * Array of {@link JLabel}s displaying the number of each type of {@link Source}.
@@ -49,14 +50,14 @@ public class TrainingSetPanel extends JPanel {
 	File outputDir;
 	
 	/**
-	 * Main constructor for the {@link TrainingSetPanel}.
+	 * Main constructor for the {@link TrainingSetSourcePanel}, for working with {@link Source} data.
 	 * 
 	 * @param classifiedSources
 	 * 	Reference to the {@link List<Source>}. The contents of this list will be displayed
-	 * in the panel whenever the {@link TrainingSetPanel#update()} method is called.
+	 * in the panel whenever the {@link TrainingSetSourcePanel#update()} method is called.
 	 */
-	public TrainingSetPanel(List<Source> classifiedSources, File outputDir) {
-		this.classifiedSources = classifiedSources;
+	public TrainingSetWindowPanel(List<Window> classifiedWindows, File outputDir) {
+		this.classifiedWindows = classifiedWindows;
 		this.outputDir = outputDir;
 		
 		// Panel displaying number of sources of each type
@@ -88,19 +89,19 @@ public class TrainingSetPanel extends JPanel {
 		// Update with initial list contents
 		update();
 	}
-
+	
 	/**
-	 * Writes all the manually classified {@link Source}s currently stored in the
-	 * {@link GaiaSourceClassificationPanel#classifiedSources} to file then clear
+	 * Writes all the manually classified {@link Window}s currently stored in the
+	 * {@link GaiaWindowClassificationPanel#classifiedWindows} to file then clear
 	 * the list.
 	 */
 	private void writeTrainingSetToFile() {
 		// Write the list contents to a file then clear it
-		int nSources = classifiedSources.size();
-		File output = new File(outputDir, "Source_"+nSources+".ser");
-		FileUtil.serialize(output, classifiedSources);
-		classifiedSources.clear();
-		JOptionPane.showMessageDialog(this, "Written "+nSources+" classified Sources to "+output.getAbsolutePath(),
+		int nSources = classifiedWindows.size();
+		File output = new File(outputDir, "Window_"+nSources+".ser");
+		FileUtil.serialize(output, classifiedWindows);
+		classifiedWindows.clear();
+		JOptionPane.showMessageDialog(this, "Written "+nSources+" classified Windows to "+output.getAbsolutePath(),
 				"Writing training set to file...", JOptionPane.INFORMATION_MESSAGE);
 		update();
 	}
@@ -110,8 +111,10 @@ public class TrainingSetPanel extends JPanel {
 	 */
 	public void update() {
 		int[] srcCounts = new int[Type.values().length];
-		for(Source source : classifiedSources) {
-			srcCounts[source.getType().ordinal()]++;
+		for(Window window : classifiedWindows) {
+			for(Source source : window.sources) {
+				srcCounts[source.getType().ordinal()]++;
+			}
 		}
 		for(int i=0; i<Type.values().length; i++) {
 			counts[i].setText(String.format("%d", srcCounts[i]));
