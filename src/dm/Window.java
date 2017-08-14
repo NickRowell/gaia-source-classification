@@ -172,8 +172,8 @@ public class Window implements Serializable {
     		b.putFloat(sample);
     	}
     	// Write the number of each type of {@link Source}; 1 byte each
-    	for(Source source : sources) {
-    		b.put(sourceCounts.get(source.getType())[0]);
+    	for(Type type : Type.values()) {
+    		b.put(sourceCounts.get(type)[0]);
     	}
     	// Write the OBMT; 8 bytes
     	b.putDouble(obmtRev);
