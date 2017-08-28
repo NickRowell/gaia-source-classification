@@ -178,6 +178,21 @@ public class Window implements Serializable {
     	// Write the OBMT; 8 bytes
     	b.putDouble(obmtRev);
     	
+    	// Write the AC window coordinate [pixels]; 2 bytes
+    	b.putShort(acWinCoord);
+    	
+    	// Write the field-of-view number; 1 byte
+    	b.put(fov);
+
+    	// Write the row number; 1 byte
+    	b.put(row);
+    	
+    	// Write the strip number; 1 byte
+    	b.put(strip);
+
+    	// Write the gate number; 1 byte
+    	b.put(gate);
+    	
     	// TODO: add other fields as necessary
     	
     	return b.array();
