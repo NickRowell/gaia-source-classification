@@ -57,7 +57,7 @@ public class WriteWindowsToBinaryFile {
 			for(Window window : windows) {
 				
 				// Get the byte array representation for the {@link Window} and write to the byte output stream
-				out.write(window.toByteArray());
+				out.write(Window.toByteArray(window));
 				
 				for(Source source : window.sources) {
 					sourceCounts[source.getType().ordinal()]++;

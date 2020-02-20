@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -721,8 +723,29 @@ public class GaiaWindowClassificationPanel extends JPanel {
 	private void initialiseWindowIteration() {
 		
 		// We got a new File; now load all the {@link Window}s
-		@SuppressWarnings("unchecked")
-		List<Window> windows = (List<Window>) FileUtil.deserialize(currentFile);
+		List<Window> windows = new LinkedList<>();
+		
+		if(currentFile.getName().endsWith(".ser")) {
+			// File contains serialized Java objects
+			@SuppressWarnings("unchecked")
+			List<Window> wins = (List<Window>) FileUtil.deserialize(currentFile);
+			windows.addAll(wins);
+		}
+		else if(currentFile.getName().endsWith(".dat")) {
+			try {
+				byte[] fileContent = Files.readAllBytes(currentFile.toPath());
+				int[] p = {0};
+				while(p[0] < fileContent.length) {
+					windows.add(Window.fromByteArray(fileContent, p));
+				}
+			} catch (IOException e) {
+				logger.severe("Exception reading file " + currentFile.getName());
+			}
+		}
+		else {
+			logger.severe("Couldn't interpret file " + currentFile.getName());
+			return;
+		}
 		
 		logger.info("Loaded "+windows.size()+" Windows from File "+currentFile.getName());
 		
